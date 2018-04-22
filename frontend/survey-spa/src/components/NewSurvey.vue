@@ -26,16 +26,43 @@
         <div class="columns">
           <div class="column is-half is-offset-one-quarter">
 
-            <div class="name" v-show="step == 'name'">
-              <h2 class="is-large">Add Name</h2>
+            <div class="name" v-show="step === 'name'">
+              <div class="field">
+                <label class="label" for="name">Survey Name:</label>
+                <div class="control">
+                  <input type="text" class="input is-large" id="name" v-model="name">
+                </div>
+              </div>
             </div>
 
-            <div class="questions" v-show="step == 'questions'">
-              <h2 class="is-large">Add Questions</h2>
+            <div class="questions" v-show="step === 'questions'">
+              <new-question v-on:questionComplete="appendQuestion"></new-question>
             </div>
 
-            <div class="review" v-show="step == 'review'">
-              <h2 class="is-large">Review and Submit</h2>
+            <div class="review" v-show="step === 'review'">
+              <div class="review" v-show="step === 'review'">
+                <ul>
+                  <li class="question" v-for="(question, qIdx) in questions" :key="`question-${qIdx}`">
+                    <div class="title">
+                      {{ question.question }}
+                      <span class="icon is-medium is-pulled-right delete-question"
+                            @click.stop="removeQuestion(question)">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                      </span>
+                    </div>
+                    <ul>
+                      <li v-for="(choice , cIdx) in question.choices" :key="`choice-${cIdx}`">
+                        {{ cIdx + 1 }}. {{ choice }}
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+
+                <div class="control">
+                  <a class="button is-large is-primary" @click="submitSurvey">Submit</a>
+                </div>
+
+              </div>
             </div>
 
           </div>
@@ -47,15 +74,40 @@
 </template>
 
 <script>
+import NewQuestion from '@/components/NewQuestion'
+
 export default {
+  components: { NewQuestion },
   data () {
     return {
-      step: 'name'
+      step: 'name',
+      name: '',
+      questions: []
+    }
+  },
+  methods: {
+    appendQuestion (newQuestion) {
+      this.questions.push(newQuestion)
+    },
+    removeQuestion (question) {
+      const idx = this.questions.findIndex(q => q.question === question.question)
+      this.questions.splice(idx, 1)
+    },
+    submitSurvey () {
+      this.$store.dispatch('submitNewSurvey', {
+        name: this.name,
+        questions: this.questions
+      }).then(() => this.$router.push('/'))
     }
   }
 }
 </script>
 
 <style scoped>
-
+  .review>ul>li {
+    margin-bottom: 20px;
+  }
+  span.icon > svg:hover {
+    color: red;
+  }
 </style>
