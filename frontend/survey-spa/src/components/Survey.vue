@@ -23,7 +23,7 @@
                 <div class="control">
                   <div v-for="choice in question.choices" v-bind:key="choice.id">
                     <label class="radio">
-                      <input type="radio" v-model="question.choice" :value="choice.id">
+                      <input type="radio" v-model="selectedChoice" :value="choice.id">
                       {{ choice.text }}
                     </label>
                   </div>
@@ -63,19 +63,15 @@
 </template>
 
 <script>
-import { fetchSurvey, saveSurveyResponse } from '../api'
+import { fetchSurvey } from '../api'
 export default {
   data () {
     return {
-      survey: {},
       currentQuestion: 0 // new data prop
     }
   },
   beforeMount () {
-    console.log('Survey.beforeMount -> :id === ', this.$route.params.id)
-    fetchSurvey(parseInt(this.$route.params.id)).then(response => {
-      this.survey = response
-    })
+    this.$store.dispatch('loadSurvey', { id: parseInt(this.$route.params.id) })
   },
   methods: { // new Vue obj member
     goToNextQuestion () {
@@ -93,7 +89,7 @@ export default {
       }
     },
     handleSubmit () {
-      saveSurveyResponse(this.survey)
+      this.$store.dispatch('addSurveyResponse')
         .then(() => this.$router.push('/'))
     }
   },
@@ -105,6 +101,20 @@ export default {
         return numQuestions === numCompleted
       }
       return false
+    },
+    survey() {
+      return this.$store.state.currentSurvey
+    },
+    selectedChoice: {
+      get() {
+        const question = this.survey.questions[this.currentQuestion]
+        return question.choice
+      },
+      set(value) {
+        const question = this.survey.questions[this.currentQuestion]
+        this.$store.commit('setChoice', { questionId: question.id, choice: value })
+      }
+
     }
   }
 }
