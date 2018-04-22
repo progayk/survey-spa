@@ -18,7 +18,7 @@ export default new Router({
       name: 'Survey',
       component: Survey
     }, {
-      path: '/surveys/new',
+      path: '/surveys',
       name: 'NewSurvey',
       component: NewSurvey
     }
