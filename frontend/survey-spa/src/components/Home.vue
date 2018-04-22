@@ -25,17 +25,13 @@
 </template>
 
 <script>
-import { fetchSurveys } from '../api'
+import { mapState } from 'vuex'
 export default {
-  data: function () {
-    return {
-      surveys: []
-    }
-  },
-  beforeMount () {
-    fetchSurveys().then(response => {
-      this.surveys = response
-    })
+  computed: mapState({
+    surveys: state => state.surveys
+  }),
+  beforeMount() {
+    this.$store.dispatch('loadSurveys')
   }
 }
 </script>

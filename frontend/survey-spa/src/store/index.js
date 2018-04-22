@@ -1,6 +1,9 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
+// imports of AJAX function go here
+import { fetchSurveys } from '@/api'
+
 Vue.use(Vuex)
 
 // The state object will serve as the single source of truth where all the important application-level
@@ -8,6 +11,7 @@ Vue.use(Vuex)
 // and watched for changes by any components interested in them such as the Home component
 const state = {
   // single source of data
+  surveys: []
 }
 
 // The actions object is where I will define what are known as action methods.
@@ -15,6 +19,10 @@ const state = {
 // handle asynchronous operations such as AJAX calls to an external service or API.
 const actions = {
   // asynchronous operations
+  loadSurveys (context) {
+    return fetchSurveys()
+      .then((response) => context.commit('setSurveys', { surveys: response }))
+  }
 }
 
 // The mutations object provides methods which are referred to being "committed" and serve as the one
@@ -23,6 +31,9 @@ const actions = {
 // values, causing the UI to update and re-render its elements.
 const mutations = {
   // isolated data mutations
+  setSurveys (state, payload) {
+    state.surveys = payload.surveys
+  }
 }
 
 // The getters object contains methods also, but in this case they serve to access the state data
