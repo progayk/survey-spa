@@ -12,7 +12,7 @@
         <div class="card" v-for="survey in surveys" v-bind:key="survey.id">
           <div class="card-content">
             <p class="title">{{ survey.name }}</p>
-            <p class="subtitle">{{survey.created_at.toDateString() }}</p>
+            <p class="subtitle">{{ survey.created_at.toDateString() }}</p>
           </div>
         </div>
       </div>
@@ -22,19 +22,19 @@
 </template>
 
 <script>
-  import { fetchSurveys } from "../api";
-  export default {
+import { fetchSurveys } from '../api'
+export default {
   data: function () {
     return {
       surveys: []
     }
   },
-    beforeMount() {
-      fetchSurveys().then(response => {
-        this.surveys = response
-      })
-    }
+  beforeMount () {
+    fetchSurveys().then(response => {
+      this.surveys = response
+    })
   }
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
