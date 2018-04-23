@@ -1,3 +1,5 @@
+tutorial link = http://stackabuse.com/single-page-apps-with-vue-js-and-flask-restful-api-with-flask/
+
 # ===========================
 # | Brief Explanation of Flask | 
 # ===========================
@@ -212,4 +214,130 @@ Python package called pprint.
 # ======================
 implement the functionality to fetch a single survey by its id with the URL endpoint /surveys/id/ and view function survey(id). 
 Immediately following the surveys() API view function
+
+Test the new API endpoint to make sure it serves up a valid response.
 # ======================
+
+    >>> resp = requests.get('http://localhost:5000/api/surveys/1/')
+    >>> pp.pprint(resp.json())
+    {'survey': {
+        'created_at': '2018-03-06 03:52:44',
+        'id': 1,
+        'name': 'Dogs',
+        'questions': [{
+            'choices': [{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 1,
+                'question_id': 1,
+                'text': 'Beagle'
+                },{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 3,
+                'question_id': 1,
+                'text': 'Labrador'
+                },{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 2,
+                'question_id': 1,
+                'text': 'Rottweiler'}],
+                'created_at': '2018-03-06 03:52:44',
+                'id': 1,
+                'survey_id': 1,
+                'text': 'What is your favorite dog?'
+            },{
+            'choices': [{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 4,
+                'question_id': 2,
+                'text': 'Beagle'
+                },{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 6,
+                'question_id': 2,
+                'text': 'Labrador'
+                },{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 5,
+                'question_id': 2,
+                'text': 'Rottweiler'}],
+            'created_at': '2018-03-06 03:52:44',
+            'id': 2,
+            'survey_id': 1,
+            'text': 'What is your second favorite dog?'}]}
+        }
+
+# ======================
+So far I have only used the default HTTP GET route method suitable for fetching data from RESTful APIs. 
+However, for the last two pieces of functionality I will need to utilize the HTTP POST and PUT methods 
+for the endpoints /api/surveys/ and /api/surveys/id/, respectively. I will use the HTTP POST method for 
+creating new surveys and the HTTP PUT method for updating an existing survey with a new set of selected 
+response choices.
+
+For the /api/surveys/ route I will need to add a method parameter to the route declaration to specify 
+that it accepts both GET and POST methods, methods=('GET','POST'). In addition I will modify the body of 
+the surveys() view function to differentiate the method type and add the ability to save a new survey 
+to the database.
+# ======================
+
+# ======================
+Again, I will want to save the project and test this to make sure I have a fully functional survey saving resource.
+# ======================
+    >>> import json
+    survey = {
+    ...   'name': 'Cars',
+    ...   'questions': [{
+    ...     'text': 'What is your favorite car?',
+    ...     'choices': [
+    ...       { 'text': 'Corvette' },
+    ...       { 'text': 'Mustang' },
+    ...       { 'text': 'Camaro' }]
+    ...   }, {
+    ...     'text': 'What is your second favorite car?',
+    ...     'choices': [
+    ...       { 'text': 'Corvette' },
+    ...       { 'text': 'Mustang' },
+    ...       { 'text': 'Camaro' }]
+    ...   }]
+    ... }
+    >>> headers = {'Content-type': 'application/json'}
+    >>> resp = requests.post('http://localhost:5000/api/surveys/', headers=headers, data=json.dumps(survey))
+    >>> resp.status_code
+    201  
+    >>> resp2 = requests.get('http://localhost:5000/api/surveys/2/')
+    >>> pp.pprint(resp2.json())
+    {'survey': {'created_at': '2018-04-23 10:54:57',
+    .
+    .
+    .
+
+# ======================
+The final piece to implement is the ability to update an existing survey with new survey response selections.
+Again, I will need to add the methods of GET and PUT to the /api/surveys/id/ route definition, 
+methods=('GET', 'PUT'). Then I update the survey(id) view function to update the associated survey's question 
+choices specified as being selected in the JSON body of the PUT request.
+# ======================
+
+# ======================
+Lastly, I need to save all my files and do one final test like so:
+# ======================
+
+    >>> survey_choices = {
+    ...   'id': 1,
+    ...   'name': 'Dogs',
+    ...   'questions': [
+    ...     { 'id': 1, 'choice': 1 },
+    ...     { 'id': 2, 'choice': 5 }]
+    ... }
+    >>> headers = {'Content-type': 'application/json'}
+    >>> resp = requests.put('http://localhost:5000/api/surveys/1/', data=json.dumps(survey_choices), headers=headers)
+    >>> resp.status_code()
+    201 
+
+# =======================================================
+  | Route        |     Method     |      Functionaility |
+# -------------------------------------------------------
+ /api/surveys/         GET	        Retrieve all surveys
+ /api/surveys/	       POST	        Create a new survey
+ /api/surveys/id/	   GET	        Retrieve a survey by id
+ /api/surveys/id/	   PUT	        Update a survey's choice selections
+ # -------------------------------------------------------

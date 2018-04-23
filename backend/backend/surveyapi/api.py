@@ -10,13 +10,37 @@ api = Blueprint('api', __name__)
 
 # As for the actual resource endpoints, I will start by coding up 
 # the ability to fetch all survey resources. 
-@api.route('/surveys/')
-def surveys():
-    surveys = Survey.query.all()
-    return jsonify({'surveys': [s.to_dict() for s in surveys]})
+@api.route('/surveys/', methods=('GET', 'POST'))
+def fetch_surveys():
+    if request.method == 'GET':
+        surveys = Survey.query.all()
+        return jsonify({'surveys': [s.to_dict() for s in surveys]})
+    elif request.method == 'POST':
+        data = request.get_json()
+        survey = Survey(name=data['name'])
+        questions = []
+        for q in data['questions']:
+            question = Question(text=q['text'])
+            question.choices = [Choice(text=c['text'])
+                                for c in q['choices']]
+            questions.append(question)
+        survey.questions = questions
+        db.session.add(survey)
+        db.session.commit()
+        return jsonify(survey.to_dict()), 201
+    
 
 
-@api.route('/surveys/<int:id>/')
+@api.route('/surveys/<int:id>/', methods=('GET', 'PUT'))
 def survey(id):
-    survey = Survey.query.get(id)
-    return jsonify({'survey': survey.to_dict()})
+    if request.method == 'GET':
+        survey = Survey.query.get(id)
+        return jsonify({'survey': survey.to_dict()})
+    elif request.method == 'PUT':
+        data = request.get_json()
+        for q in data['questions']:
+            choice = Choice.query.get(q['choice'])
+            choice.selected = + 1
+        db.session.commit()
+        survey = Survey.query.get(data['id'])
+        return jsonify(survey.to_dict()), 201
