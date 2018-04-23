@@ -448,5 +448,69 @@ tutorial link = http://stackabuse.com/single-page-apps-with-vue-js-and-flask-res
     a creator_id foreign key to the Survey class to link users to surveys they create.
     # ===========================================================
 
+    # ===========================================================
+    Next up is to generate a new migration and update the database with it to pair the User Python class with a users 
+    sqlite database table. To do this I run the following commands in the same directory as my manage.py module.
+    # ===========================================================
 
+        (venv) $ python manage.py db migrate
+        venv) $ python manage.py db upgrade
 
+    # ===========================================================
+    Time to hop over to the api.py module and implement the functionality to register and authenticate users along 
+    with verification functionality to protect the creation of new surveys. After all, I don't want any nefarious 
+    web bots or other bad actors polluting my awesome survey app.
+
+    To start I add the User class to the list of imports from the models.py module towards the top of the
+    api.py module. While I'm in there I will go ahead and add a couple of other imports I will be using later.
+    # ===========================================================
+
+    # ===========================================================
+    I will begin with the register() view function which expects an email and password to be sent along in JSON in 
+    the body of the POST request. The user is simply created with whatever is given for the email and password and 
+    I merrily return a JSON response (which isn't necessarily the best approach, but it will work for the moment).
+    # ===========================================================
+
+    # ===========================================================
+    The login function uses the User.authenticate(...) class method to try to find and authenticate a user. If the 
+    user matching the given email and password is found then the login function progresses to create a JWT token, 
+    otherwise None is returned, resulting in the login function to return a "failure to authenticate" message with 
+    the appropriate HTTP status code of 401.
+
+    I create the JWT token using PyJWT (as jwt) by encoding a dictionary containing the following:
+
+        - sub - the subject of the jwt, which in this case is the user's email
+        - iat - the time the jwt was issued at
+        - exp - is the moment the jwt should expire, which is 30 minutes after issuing in this case
+
+    # ===========================================================
+
+    # ===========================================================
+    Next up I would like to break up the GET and POST functionality that currently resides in a poorly named 
+    view function called fetch_survey(...) shown below in its original state. Instead, I will let fetch_surveys(...) 
+    be solely in charge of fetching all surveys when requesting "/api/surveys/" with a GET request. Survey creation,
+    on the other hand, which happens when the same URL is hit with a POST request, will now reside in a new function 
+    called create_survey(...).
+    # ===========================================================
+
+    # ===========================================================
+    The real key now is to protect the create_survey(...) view function so that only authenticated users can create 
+    new surveys. Said another way, if a POST request is made against "/api/surveys" the application should check to 
+    make sure that it is being done by a valid and authenticated user.
+
+    In comes the handy Python decorator! I will use a decorator to wrap the create_survey(...) view function which will 
+    check that the requester contains a valid JWT token in its header and turn away any requests that do not. I will 
+    call this decorator token_required and implement it above all the other view functions in api.py.
+    # ===========================================================
+
+    # ===========================================================
+    The primary logic of this decorator is to:
+
+    - Ensure it contains the "Authorization" header with a string that looks like a JWT token
+    - Validate that the JWT is not expired, which PyJWT takes care of for me by throwing a 
+      ExpiredSignatureError if it is no longer valid
+    - Validate that the JWT is a valid token, which PyJWT also takes care of by throwing a InvalidTokenError if it is not valid
+    - If all is valid then the associated user is queried from the database and returned to the function the decorator is wrapping
+
+    Now all that remains is to add the decorator to the create_survey(...) method.
+    # ===========================================================
