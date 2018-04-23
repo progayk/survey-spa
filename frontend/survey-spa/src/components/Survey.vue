@@ -101,15 +101,15 @@ export default {
       }
       return false
     },
-    survey() {
+    survey () {
       return this.$store.state.currentSurvey
     },
     selectedChoice: {
-      get() {
+      get () {
         const question = this.survey.questions[this.currentQuestion]
         return question.choice
       },
-      set(value) {
+      set (value) {
         const question = this.survey.questions[this.currentQuestion]
         this.$store.commit('setChoice', { questionId: question.id, choice: value })
       }

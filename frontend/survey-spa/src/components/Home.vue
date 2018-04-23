@@ -30,7 +30,7 @@ export default {
   computed: mapState({
     surveys: state => state.surveys
   }),
-  beforeMount() {
+  beforeMount () {
     this.$store.dispatch('loadSurveys')
   }
 }

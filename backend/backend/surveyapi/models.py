@@ -51,7 +51,7 @@ class User(db.Model):
     @classmethod
     def authenticate(cls, **kwargs):
         email = kwargs.get('email')
-        password = kwargs.get('passwords')
+        password = kwargs.get('password')
 
         if not email or not password:
             return None

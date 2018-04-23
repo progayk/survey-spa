@@ -7,6 +7,7 @@ myenv
 npm-debug.log*
 survey.db
 *.pyc
+backend/backend/surveyapi/__pycache__/
 __pycache__/
 node_modules/
 

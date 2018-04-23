@@ -6,6 +6,8 @@ from functools import wraps
 from flask import Blueprint, jsonify, request, current_app
 from .models import db, Survey, Question, Choice, User
 
+from datetime import datetime, timedelta
+
 import jwt
 
 api = Blueprint('api', __name__)
@@ -22,7 +24,7 @@ def token_required(f):
 
         expired_msg = {
             'message': 'Expired token. Reauthentication required',
-            'authentication': False
+            'authenticated': False
         }
 
         if len(auth_headers) != 2:
