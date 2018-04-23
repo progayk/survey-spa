@@ -1,410 +1,452 @@
+
+# ===============================
+# | Brief Explanation of Flask | 
+# ===============================
+
 tutorial link = http://stackabuse.com/single-page-apps-with-vue-js-and-flask-restful-api-with-flask/
 
-                # ===========================
-                # | Brief Explanation of Flask | 
-                # ===========================
+    # ===========================
+    Flask is a Python-based micro-framework for rapid prototyping and development of small to moderate size web applications. 
+    Flask has already been covered in a couple of prior posts here and here on StackAbuse so, I will not be going into great 
+    detail pertaining to the basic or common parts of Flask. Instead I will be taking a more pragmatic approach focusing mostly 
+    on constructing a RESTful API to fuel the frontend with data, which I covered in the articles leading up to this one.
+    # ======================
+
+# =============================================
+# | Scaffolding out the Backend Project Files | 
+# =============================================
+
+    # =============================================
+    One thing that makes Flask (and in large part the entire Python ecosystem) so awesome are the large number of well-designed 
+    packages available on PyPI. Below is a brief explanation of the libraries that I installed and their intended usage.
+
+        Flask: Web micro framework
+        Flask-SQLAlchemy: SQLAlchemy-based ORM with some Flask-specific awesome sauce packaged with it
+        Flask-Migrate: Database migration library
+        Flask-Script: Extremely useful package for interacting with a Flask application from the command line
+        requests: a handy package for making network requests which I will use to test the REST API
+        In the /backend directory I make a few new files called manage.py and appserver.py. 
+        Also, I will make a new directory inside of /backend that will become my "surveyapi" Flask application. 
+        Within the surveyapi directory I make the files __init__.py, models.py, application.py, and api.py. 
+        This results in a directory structure beginning at /backend like so (omitting the venv directory).
+    # =============================================
+
+        $ virtualenv -p python3 venv
+        $ source venv/bin/activate
+        (venv) $ pip install Flask Flask-SQLAlchemy Flask-Migrate Flask-Script requests
+
+            ├── manage.py
+        ├── appserver.py
+        └── surveyapi
+            ├── __init__.py
+            ├── api.py
+            ├── application.py
+            ├── config.py
+            └── models.py
+
+    # =============================================
+    Below is a brief description of what each file is going to be used for:
+
+        manage.py: access to the Flask application instance for various Flask-Script commands
+        appserver.py: start-up script for running the surveyapi application
+        surveyapi/: the backend Flask application
+        __init__.py: turns the surveyapi directory into a valid Python package
+        api.py: for defining REST API route endpoints capable of consuming and producing JSON request and responses
+        application.py: for creating an instance of the Flask application
+        config.py: contains configuration settings for the Flask application
+        models.py: for defining classes that will serve as data objects for the survey application such as Survey, Question, and Choice
+    # =============================================
+
+
+# ===================================
+# | Creating an Application Factory | 
+# ===================================
+
+    # ===================================================
+    This config class defines a SQLALCHEMY_DATABASE_URI application database connection URI to a single file SQLite database called survey.db. 
+    It also provides SECRET_KEY config option that is used for encryption.
+    # ===================================================
+
+# =================
+# | Blueprint API | 
+# =================
+
+    # ===================================================
+    Next I will move into the api.py module where I can define a Blueprint object called api containing RESTful routes. 
+    To keep things simple I will begin by just defining a simple view function called say_hello() associated with the endpoint 
+    /api/hello/<string:name>/. The <string:name> portion of the url is a dynamic string variable that gets passed to the view 
+    function say_hello(name) as a function parameter which I use in the JSON response message that gets returned.
+    # ===================================================
+
+
+# ===================================================
+# | Dev Server Entry Point and Validating the Setup | 
+# ===================================================
+
+    # ===================================================
+    To test this out I need to add a couple of lines of code in appserver.py to create an instance of the app. This enables me to fire up the 
+    Flask dev server by calling the run() method on the app instance.
+    # ===================================================
+
+        (venv) $ python appserver.py
+        * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+        * Restarting with stat
+        * Debugger is active!
+        * Debugger PIN: 676-284-544
+
+    # ===================================================
+    Now to test the new endpoint, in a new terminal with the virtual environment activated, I will fire up a Python interpreter and make a 
+    GET request to http://localhost:5000/api/hello/adam/ using the requests package.
+    # ===================================================
+
+        (venv) $ python
+        >>> import requests
+        >>> response = requests.get('http://localhost:5000/api/hello/adam/')
+        >>> print(response.json())
+        {'msg': 'Hello adam'}
 
 # ===========================
-Flask is a Python-based micro-framework for rapid prototyping and development of small to moderate size web applications. 
-Flask has already been covered in a couple of prior posts here and here on StackAbuse so, I will not be going into great 
-detail pertaining to the basic or common parts of Flask. Instead I will be taking a more pragmatic approach focusing mostly 
-on constructing a RESTful API to fuel the frontend with data, which I covered in the articles leading up to this one.
-# ======================
-
-                # =============================================
-                # | Scaffolding out the Backend Project Files | 
-                # =============================================
-
-# =============================================
-One thing that makes Flask (and in large part the entire Python ecosystem) so awesome are the large number of well-designed 
-packages available on PyPI. Below is a brief explanation of the libraries that I installed and their intended usage.
-
-    Flask: Web micro framework
-    Flask-SQLAlchemy: SQLAlchemy-based ORM with some Flask-specific awesome sauce packaged with it
-    Flask-Migrate: Database migration library
-    Flask-Script: Extremely useful package for interacting with a Flask application from the command line
-    requests: a handy package for making network requests which I will use to test the REST API
-    In the /backend directory I make a few new files called manage.py and appserver.py. 
-    Also, I will make a new directory inside of /backend that will become my "surveyapi" Flask application. 
-    Within the surveyapi directory I make the files __init__.py, models.py, application.py, and api.py. 
-    This results in a directory structure beginning at /backend like so (omitting the venv directory).
-# =============================================
-
-    $ virtualenv -p python3 venv
-    $ source venv/bin/activate
-    (venv) $ pip install Flask Flask-SQLAlchemy Flask-Migrate Flask-Script requests
-
-        ├── manage.py
-    ├── appserver.py
-    └── surveyapi
-        ├── __init__.py
-        ├── api.py
-        ├── application.py
-        ├── config.py
-        └── models.py
-
-# =============================================
-Below is a brief description of what each file is going to be used for:
-
-    manage.py: access to the Flask application instance for various Flask-Script commands
-    appserver.py: start-up script for running the surveyapi application
-    surveyapi/: the backend Flask application
-    __init__.py: turns the surveyapi directory into a valid Python package
-    api.py: for defining REST API route endpoints capable of consuming and producing JSON request and responses
-    application.py: for creating an instance of the Flask application
-    config.py: contains configuration settings for the Flask application
-    models.py: for defining classes that will serve as data objects for the survey application such as Survey, Question, and Choice
-# =============================================
-
-
-                # ===================================
-                # | Creating an Application Factory | 
-                # ===================================
-
-# ===================================================
-This config class defines a SQLALCHEMY_DATABASE_URI application database connection URI to a single file SQLite database called survey.db. 
-It also provides SECRET_KEY config option that is used for encryption.
-# ===================================================
-
-                # =================
-                # | Blueprint API | 
-                # =================
-
-# ===================================================
-Next I will move into the api.py module where I can define a Blueprint object called api containing RESTful routes. 
-To keep things simple I will begin by just defining a simple view function called say_hello() associated with the endpoint 
-/api/hello/<string:name>/. The <string:name> portion of the url is a dynamic string variable that gets passed to the view 
-function say_hello(name) as a function parameter which I use in the JSON response message that gets returned.
-# ===================================================
-
-
-                # ===================================================
-                # | Dev Server Entry Point and Validating the Setup | 
-                # ===================================================
-
-# ===================================================
-To test this out I need to add a couple of lines of code in appserver.py to create an instance of the app. This enables me to fire up the 
-Flask dev server by calling the run() method on the app instance.
-# ===================================================
-
-    (venv) $ python appserver.py
-    * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
-    * Restarting with stat
-    * Debugger is active!
-    * Debugger PIN: 676-284-544
-
-# ===================================================
-Now to test the new endpoint, in a new terminal with the virtual environment activated, I will fire up a Python interpreter and make a 
-GET request to http://localhost:5000/api/hello/adam/ using the requests package.
-# ===================================================
-
-    (venv) $ python
-    >>> import requests
-    >>> response = requests.get('http://localhost:5000/api/hello/adam/')
-    >>> print(response.json())
-    {'msg': 'Hello adam'}
-
-                # ===========================
-                # | Defining the Data Layer | 
-                # ===========================
-
+# | Defining the Data Layer | 
 # ===========================
-The last thing that I am doing in the manage.py module is creating another custom command utilizing @manager.
-shell to decorate a shell_ctx() function which returns a dict mapping keywords to the app and db objects along with 
-the Survey, Question and, Choice data classes.
 
-I will now take advantage of the usefulness of this shell utility command to demonstrate how to work with the 
-Flask-SQLAlchemy ORM within the python interpreter it produces.
-# ======================
+    # ===========================
+    The last thing that I am doing in the manage.py module is creating another custom command utilizing @manager.
+    shell to decorate a shell_ctx() function which returns a dict mapping keywords to the app and db objects along with 
+    the Survey, Question and, Choice data classes.
 
-    (venv) $ python manage.py shell
-    $ python manage.py shell
-    
-    >>> survey = Survey(name='Dogs')
-    >>> question = Question(text='What is your favorite dog?')
-    >>> question.choices = [Choice(text='Beagle'), Choice(text='Rottweiler'), Choice(text='Labrador')]
-    >>> question2 = Question(text='What is your second favorite dog?')
-    >>> question2.choices = [Choice(text='Beagle'), Choice(text='Rottweiler'), Choice(text='Labrador')]
-    >>> survey.questions = [question, question2]
-    >>> db.session.add(survey)
-    >>> db.session.commit()
-    >>> surveys = Survey.query.all()
-    >>> for s in surveys:
-    ...     print('Survey(id={}, name={})'.format(s.id, s.name))
-    ...     for q in s.questions:
-    ...             print('  Question(id={}, text={})'.format(q.id, q.text))
-    ...             for c in q.choices:
-    ...                     print('    Choice(id={}, text={})'.format(c.id, c.text))
-    ...
-    Survey(id=1, name=Dogs)  
-    Question(id=1, text=What is your favorite dog?)
-        Choice(id=1, text=Beagle)
-        Choice(id=3, text=Labrador)
-        Choice(id=2, text=Rottweiler)
-    Question(id=2, text=What is your second favorite dog?)
-        Choice(id=4, text=Beagle)
-        Choice(id=6, text=Labrador)
-        Choice(id=5, text=Rottweiler)
+    I will now take advantage of the usefulness of this shell utility command to demonstrate how to work with the 
+    Flask-SQLAlchemy ORM within the python interpreter it produces.
+    # ======================
+
+        (venv) $ python manage.py shell
+        $ python manage.py shell
+        
+        >>> survey = Survey(name='Dogs')
+        >>> question = Question(text='What is your favorite dog?')
+        >>> question.choices = [Choice(text='Beagle'), Choice(text='Rottweiler'), Choice(text='Labrador')]
+        >>> question2 = Question(text='What is your second favorite dog?')
+        >>> question2.choices = [Choice(text='Beagle'), Choice(text='Rottweiler'), Choice(text='Labrador')]
+        >>> survey.questions = [question, question2]
+        >>> db.session.add(survey)
+        >>> db.session.commit()
+        >>> surveys = Survey.query.all()
+        >>> for s in surveys:
+        ...     print('Survey(id={}, name={})'.format(s.id, s.name))
+        ...     for q in s.questions:
+        ...             print('  Question(id={}, text={})'.format(q.id, q.text))
+        ...             for c in q.choices:
+        ...                     print('    Choice(id={}, text={})'.format(c.id, c.text))
+        ...
+        Survey(id=1, name=Dogs)  
+        Question(id=1, text=What is your favorite dog?)
+            Choice(id=1, text=Beagle)
+            Choice(id=3, text=Labrador)
+            Choice(id=2, text=Rottweiler)
+        Question(id=2, text=What is your second favorite dog?)
+            Choice(id=4, text=Beagle)
+            Choice(id=6, text=Labrador)
+            Choice(id=5, text=Rottweiler)
 
 
-                # ==============================
-                # | Completing the RESTful API |
-                # ==============================
+# ==============================
+# | Completing the RESTful API |
+# ==============================
 
-# ======================
-If the dev server is still running then once I save the project files the server should automatically reload
-refreshing all the changes. If not, then running (venv) $ python appserver.py will start the server.
-Now in another terminal with the virtual environment activated I can use the requests package to test this new endpoint. 
-However, I would like to share a pro-tip on displaying JSON responses in a more readable way by using another awesome 
-Python package called pprint.
-# ======================
+    # ======================
+    If the dev server is still running then once I save the project files the server should automatically reload
+    refreshing all the changes. If not, then running (venv) $ python appserver.py will start the server.
+    Now in another terminal with the virtual environment activated I can use the requests package to test this new endpoint. 
+    However, I would like to share a pro-tip on displaying JSON responses in a more readable way by using another awesome 
+    Python package called pprint.
+    # ======================
 
-    (venv) $ pip install pprint
-    (venv) $ python
-    >>> import pprint, requests
-    >>> pp == pprint.PrettyPrinter()
-    >>> resp = requests.get('http://localhost:5000/api/surveys/')
-    >>> pp.pprint(resp.json())
-    {'surveys': [{
-        'created_at': '2018-03-06 03:52:44',
-        'id': 1,
-        'name': 'Dogs',
-        'questions': [{
-            'choices': [{
-                'created_at': '2018-03-06 03:52:44',
-                'id': 1,
-                'question_id': 1,
-                'text': 'Beagle'
+        (venv) $ pip install pprint
+        (venv) $ python
+        >>> import pprint, requests
+        >>> pp == pprint.PrettyPrinter()
+        >>> resp = requests.get('http://localhost:5000/api/surveys/')
+        >>> pp.pprint(resp.json())
+        {'surveys': [{
+            'created_at': '2018-03-06 03:52:44',
+            'id': 1,
+            'name': 'Dogs',
+            'questions': [{
+                'choices': [{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 1,
+                    'question_id': 1,
+                    'text': 'Beagle'
+                    },{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 3,
+                    'question_id': 1,
+                    'text': 'Labrador'
+                    },{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 2,
+                    'question_id': 1,
+                    'text': 'Rottweiler'}],
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 1,
+                    'survey_id': 1,
+                    'text': 'What is your favorite dog?'
                 },{
-                'created_at': '2018-03-06 03:52:44',
-                'id': 3,
-                'question_id': 1,
-                'text': 'Labrador'
-                },{
+                'choices': [{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 4,
+                    'question_id': 2,
+                    'text': 'Beagle'
+                    },{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 6,
+                    'question_id': 2,
+                    'text': 'Labrador'
+                    },{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 5,
+                    'question_id': 2,
+                    'text': 'Rottweiler'}],
                 'created_at': '2018-03-06 03:52:44',
                 'id': 2,
-                'question_id': 1,
-                'text': 'Rottweiler'}],
-                'created_at': '2018-03-06 03:52:44',
-                'id': 1,
                 'survey_id': 1,
-                'text': 'What is your favorite dog?'
-            },{
-            'choices': [{
-                'created_at': '2018-03-06 03:52:44',
-                'id': 4,
-                'question_id': 2,
-                'text': 'Beagle'
-                },{
-                'created_at': '2018-03-06 03:52:44',
-                'id': 6,
-                'question_id': 2,
-                'text': 'Labrador'
-                },{
-                'created_at': '2018-03-06 03:52:44',
-                'id': 5,
-                'question_id': 2,
-                'text': 'Rottweiler'}],
+                'text': 'What is your second favorite dog?'}]}
+            ]}
+
+
+    # ======================
+    implement the functionality to fetch a single survey by its id with the URL endpoint /surveys/id/ and view function survey(id). 
+    Immediately following the surveys() API view function
+
+    Test the new API endpoint to make sure it serves up a valid response.
+    # ======================
+
+        >>> resp = requests.get('http://localhost:5000/api/surveys/1/')
+        >>> pp.pprint(resp.json())
+        {'survey': {
             'created_at': '2018-03-06 03:52:44',
-            'id': 2,
-            'survey_id': 1,
-            'text': 'What is your second favorite dog?'}]}
-        ]}
-
-
-# ======================
-implement the functionality to fetch a single survey by its id with the URL endpoint /surveys/id/ and view function survey(id). 
-Immediately following the surveys() API view function
-
-Test the new API endpoint to make sure it serves up a valid response.
-# ======================
-
-    >>> resp = requests.get('http://localhost:5000/api/surveys/1/')
-    >>> pp.pprint(resp.json())
-    {'survey': {
-        'created_at': '2018-03-06 03:52:44',
-        'id': 1,
-        'name': 'Dogs',
-        'questions': [{
-            'choices': [{
-                'created_at': '2018-03-06 03:52:44',
-                'id': 1,
-                'question_id': 1,
-                'text': 'Beagle'
+            'id': 1,
+            'name': 'Dogs',
+            'questions': [{
+                'choices': [{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 1,
+                    'question_id': 1,
+                    'text': 'Beagle'
+                    },{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 3,
+                    'question_id': 1,
+                    'text': 'Labrador'
+                    },{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 2,
+                    'question_id': 1,
+                    'text': 'Rottweiler'}],
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 1,
+                    'survey_id': 1,
+                    'text': 'What is your favorite dog?'
                 },{
-                'created_at': '2018-03-06 03:52:44',
-                'id': 3,
-                'question_id': 1,
-                'text': 'Labrador'
-                },{
+                'choices': [{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 4,
+                    'question_id': 2,
+                    'text': 'Beagle'
+                    },{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 6,
+                    'question_id': 2,
+                    'text': 'Labrador'
+                    },{
+                    'created_at': '2018-03-06 03:52:44',
+                    'id': 5,
+                    'question_id': 2,
+                    'text': 'Rottweiler'}],
                 'created_at': '2018-03-06 03:52:44',
                 'id': 2,
-                'question_id': 1,
-                'text': 'Rottweiler'}],
-                'created_at': '2018-03-06 03:52:44',
-                'id': 1,
                 'survey_id': 1,
-                'text': 'What is your favorite dog?'
-            },{
-            'choices': [{
-                'created_at': '2018-03-06 03:52:44',
-                'id': 4,
-                'question_id': 2,
-                'text': 'Beagle'
-                },{
-                'created_at': '2018-03-06 03:52:44',
-                'id': 6,
-                'question_id': 2,
-                'text': 'Labrador'
-                },{
-                'created_at': '2018-03-06 03:52:44',
-                'id': 5,
-                'question_id': 2,
-                'text': 'Rottweiler'}],
-            'created_at': '2018-03-06 03:52:44',
-            'id': 2,
-            'survey_id': 1,
-            'text': 'What is your second favorite dog?'}]}
-        }
+                'text': 'What is your second favorite dog?'}]}
+            }
 
-# ======================
-So far I have only used the default HTTP GET route method suitable for fetching data from RESTful APIs. 
-However, for the last two pieces of functionality I will need to utilize the HTTP POST and PUT methods 
-for the endpoints /api/surveys/ and /api/surveys/id/, respectively. I will use the HTTP POST method for 
-creating new surveys and the HTTP PUT method for updating an existing survey with a new set of selected 
-response choices.
+    # ======================
+    So far I have only used the default HTTP GET route method suitable for fetching data from RESTful APIs. 
+    However, for the last two pieces of functionality I will need to utilize the HTTP POST and PUT methods 
+    for the endpoints /api/surveys/ and /api/surveys/id/, respectively. I will use the HTTP POST method for 
+    creating new surveys and the HTTP PUT method for updating an existing survey with a new set of selected 
+    response choices.
 
-For the /api/surveys/ route I will need to add a method parameter to the route declaration to specify 
-that it accepts both GET and POST methods, methods=('GET','POST'). In addition I will modify the body of 
-the surveys() view function to differentiate the method type and add the ability to save a new survey 
-to the database.
-# ======================
+    For the /api/surveys/ route I will need to add a method parameter to the route declaration to specify 
+    that it accepts both GET and POST methods, methods=('GET','POST'). In addition I will modify the body of 
+    the surveys() view function to differentiate the method type and add the ability to save a new survey 
+    to the database.
+    # ======================
 
-# ======================
-Again, I will want to save the project and test this to make sure I have a fully functional survey saving resource.
-# ======================
-    >>> import json
-    survey = {
-    ...   'name': 'Cars',
-    ...   'questions': [{
-    ...     'text': 'What is your favorite car?',
-    ...     'choices': [
-    ...       { 'text': 'Corvette' },
-    ...       { 'text': 'Mustang' },
-    ...       { 'text': 'Camaro' }]
-    ...   }, {
-    ...     'text': 'What is your second favorite car?',
-    ...     'choices': [
-    ...       { 'text': 'Corvette' },
-    ...       { 'text': 'Mustang' },
-    ...       { 'text': 'Camaro' }]
-    ...   }]
-    ... }
-    >>> headers = {'Content-type': 'application/json'}
-    >>> resp = requests.post('http://localhost:5000/api/surveys/', headers=headers, data=json.dumps(survey))
-    >>> resp.status_code
-    201  
-    >>> resp2 = requests.get('http://localhost:5000/api/surveys/2/')
-    >>> pp.pprint(resp2.json())
-    {'survey': {'created_at': '2018-04-23 10:54:57',
-    .
-    .
-    .
+    # ======================
+    Again, I will want to save the project and test this to make sure I have a fully functional survey saving resource.
+    # ======================
+        >>> import json
+        survey = {
+        ...   'name': 'Cars',
+        ...   'questions': [{
+        ...     'text': 'What is your favorite car?',
+        ...     'choices': [
+        ...       { 'text': 'Corvette' },
+        ...       { 'text': 'Mustang' },
+        ...       { 'text': 'Camaro' }]
+        ...   }, {
+        ...     'text': 'What is your second favorite car?',
+        ...     'choices': [
+        ...       { 'text': 'Corvette' },
+        ...       { 'text': 'Mustang' },
+        ...       { 'text': 'Camaro' }]
+        ...   }]
+        ... }
+        >>> headers = {'Content-type': 'application/json'}
+        >>> resp = requests.post('http://localhost:5000/api/surveys/', headers=headers, data=json.dumps(survey))
+        >>> resp.status_code
+        201  
+        >>> resp2 = requests.get('http://localhost:5000/api/surveys/2/')
+        >>> pp.pprint(resp2.json())
+        {'survey': {'created_at': '2018-04-23 10:54:57',
+        .
+        .
+        .
 
-# ======================
-The final piece to implement is the ability to update an existing survey with new survey response selections.
-Again, I will need to add the methods of GET and PUT to the /api/surveys/id/ route definition, 
-methods=('GET', 'PUT'). Then I update the survey(id) view function to update the associated survey's question 
-choices specified as being selected in the JSON body of the PUT request.
-# ======================
+    # ======================
+    The final piece to implement is the ability to update an existing survey with new survey response selections.
+    Again, I will need to add the methods of GET and PUT to the /api/surveys/id/ route definition, 
+    methods=('GET', 'PUT'). Then I update the survey(id) view function to update the associated survey's question 
+    choices specified as being selected in the JSON body of the PUT request.
+    # ======================
 
-# ======================
-Lastly, I need to save all my files and do one final test like so:
-# ======================
+    # ======================
+    Lastly, I need to save all my files and do one final test like so:
+    # ======================
 
-    >>> survey_choices = {
-    ...   'id': 1,
-    ...   'name': 'Dogs',
-    ...   'questions': [
-    ...     { 'id': 1, 'choice': 1 },
-    ...     { 'id': 2, 'choice': 5 }]
-    ... }
-    >>> headers = {'Content-type': 'application/json'}
-    >>> resp = requests.put('http://localhost:5000/api/surveys/1/', data=json.dumps(survey_choices), headers=headers)
-    >>> resp.status_code()
-    201 
+        >>> survey_choices = {
+        ...   'id': 1,
+        ...   'name': 'Dogs',
+        ...   'questions': [
+        ...     { 'id': 1, 'choice': 1 },
+        ...     { 'id': 2, 'choice': 5 }]
+        ... }
+        >>> headers = {'Content-type': 'application/json'}
+        >>> resp = requests.put('http://localhost:5000/api/surveys/1/', data=json.dumps(survey_choices), headers=headers)
+        >>> resp.status_code()
+        201 
 
-# ==============================================================================
-|   Route           |     Method     |      Functionaility                      |
-# ------------------------------------------------------------------------------
- /api/surveys/      |      GET	     |      Retrieve all surveys                |
- /api/surveys/	    |      POST	     |      Create a new survey                 |
- /api/surveys/id/   |      GET	     |      Retrieve a survey by id             |
- /api/surveys/id/   |      PUT	     |      Update a survey's choice selections |
- # -----------------------------------------------------------------------------
+    # ==============================================================================
+    |   Route           |     Method     |      Functionaility                      |
+    # ------------------------------------------------------------------------------
+    /api/surveys/      |      GET	     |      Retrieve all surveys                |
+    /api/surveys/	    |      POST	     |      Create a new survey                 |
+    /api/surveys/id/   |      GET	     |      Retrieve a survey by id             |
+    /api/surveys/id/   |      PUT	     |      Update a survey's choice selections |
+    # -----------------------------------------------------------------------------
 
 
-                # ===================================================
-                # | Brief Explanation of AJAX and Thick Client Apps |
-                # ===================================================
+# ===================================================
+# | Brief Explanation of AJAX and Thick Client Apps |
+# ===================================================
 
-# ==============================================================================
-AJAX is a powerful technology that has had enormous success in building highly interactive and fast web applications. 
-In fact, I believe AJAX is probably the most impactful technology that has fueled a major paradigm shift from the era 
-of thin client web apps to the increasingly thick or fat client web apps we see today. The survey application that 
-I have been demonstrating in this series is considered a distributed client server application implemented as a thick client. 
-This means that the majority of the logic and behavior is implemented on the client via JavaScript (mainly using Vue.js) 
-while the server side is a fairly dumb RESTful API that simply consumes and serves up data.
+    # ==============================================================================
+    AJAX is a powerful technology that has had enormous success in building highly interactive and fast web applications. 
+    In fact, I believe AJAX is probably the most impactful technology that has fueled a major paradigm shift from the era 
+    of thin client web apps to the increasingly thick or fat client web apps we see today. The survey application that 
+    I have been demonstrating in this series is considered a distributed client server application implemented as a thick client. 
+    This means that the majority of the logic and behavior is implemented on the client via JavaScript (mainly using Vue.js) 
+    while the server side is a fairly dumb RESTful API that simply consumes and serves up data.
 
-There are two major technologies that enable this thick client application to juggle the maintenance of state (data), 
-behavior, and data driven presentation.
+    There are two major technologies that enable this thick client application to juggle the maintenance of state (data), 
+    behavior, and data driven presentation.
 
-    1. The Vue.js framework with its excellent reactivity system shared along with the vuex flux-like library
-    2. AJAX functionality implemented within a well designed JavaScript library called axios
+        1. The Vue.js framework with its excellent reactivity system shared along with the vuex flux-like library
+        2. AJAX functionality implemented within a well designed JavaScript library called axios
 
-You should already be familiar with the awesomeness afforded by Vue.js and vuex from my prior posts in this series. 
-So I will focus on explaining AJAX in this article. AJAX is a network communication technology that uses HTTP to push and pull 
-data to and from a server in an asynchronous manner within the browser. In this way the browser is able to rapidly update individual 
-components that are dependent on small amounts of data, rather than updating the entire page, which leads to a far more responsive experience.
-# ==============================================================================
+    You should already be familiar with the awesomeness afforded by Vue.js and vuex from my prior posts in this series. 
+    So I will focus on explaining AJAX in this article. AJAX is a network communication technology that uses HTTP to push and pull 
+    data to and from a server in an asynchronous manner within the browser. In this way the browser is able to rapidly update individual 
+    components that are dependent on small amounts of data, rather than updating the entire page, which leads to a far more responsive experience.
+    # ==============================================================================
 
-                # ======================================
-                # | Setting up Axios and Enabling CORS |
-                # ======================================
+# ======================================
+# | Setting up Axios and Enabling CORS |
+# ======================================
 
-# ==============================================================================
-To install axios I will use npm and save it to my the package.json file with the following command:
-# ==============================================================================
+    # ==============================================================================
+    To install axios I will use npm and save it to my the package.json file with the following command:
+    # ==============================================================================
 
-    $ npm install --save axios
+        $ npm install --save axios
 
-# ==============================================================================
-Now, in order to use axios to make AJAX requests from the client to the back-end server I will need to make a change to the Flask application 
-to enable Cross Origin Resource Sharing (CORS). Anytime a client makes a request for a resource that resides on another machine as defined 
-by protocol, IP address / domain name, or port number then additional headers associated with CORS must be added. 
-Luckily, the there is a handy little Flask extension, Flask-CORS, that makes integration with Flask very easy. 
-As done previously I use pip to install it like so.
-# ==============================================================================
+    # ==============================================================================
+    Now, in order to use axios to make AJAX requests from the client to the back-end server I will need to make a change to the Flask application 
+    to enable Cross Origin Resource Sharing (CORS). Anytime a client makes a request for a resource that resides on another machine as defined 
+    by protocol, IP address / domain name, or port number then additional headers associated with CORS must be added. 
+    Luckily, the there is a handy little Flask extension, Flask-CORS, that makes integration with Flask very easy. 
+    As done previously I use pip to install it like so.
+    # ==============================================================================
 
-# ==============================================================================
-Next I need to import and instantiate the CORS extension object then register it with the 
-Flask application object within the application.py module of the back-end application.
-# ==============================================================================
+    # ==============================================================================
+    Next I need to import and instantiate the CORS extension object then register it with the 
+    Flask application object within the application.py module of the back-end application.
+    # ==============================================================================
 
-                # ======================================
-                # | Implementing AJAX Requests with Axios |
-                # ======================================
+# ======================================
+# | Implementing AJAX Requests with Axios |
+# ======================================
 
-# ==============================================================================
-In src/api/index.js I need to import the axios library and for reusability I also define a variable called API_URL that 
-is equal to the root of the API resource http://127.0.0.1:5000/api. Then I replace the body of the existing functions 
-to use the axios methods get(...), put(...), and post(...)
-# ==============================================================================
+    # ==============================================================================
+    In src/api/index.js I need to import the axios library and for reusability I also define a variable called API_URL that 
+    is equal to the root of the API resource http://127.0.0.1:5000/api. Then I replace the body of the existing functions 
+    to use the axios methods get(...), put(...), and post(...)
+    # ==============================================================================
 
-# ==============================================================================
-Now there are only two small changes to make in src/store/index.js to accommodate the convention used by axios to return 
-data from get requests. In the loadSurvey(...) and loadSurveys(...) action methods, they are each calling the function 
-that in turn calls the axios.get(...) methods, which return promises. When these promises resolve they will contain the 
-data returned by the AJAX request to the server and that data will be held in a .data member of the resolved promise object.
- So, the data passed to the mutations will need to be response.data instead of just response.
-# ==============================================================================
+    # ==============================================================================
+    Now there are only two small changes to make in src/store/index.js to accommodate the convention used by axios to return 
+    data from get requests. In the loadSurvey(...) and loadSurveys(...) action methods, they are each calling the function 
+    that in turn calls the axios.get(...) methods, which return promises. When these promises resolve they will contain the 
+    data returned by the AJAX request to the server and that data will be held in a .data member of the resolved promise object.
+    So, the data passed to the mutations will need to be response.data instead of just response.
+    # ==============================================================================
+
+# ============================================
+# | Basic Introduction to JWT Authentication |
+# ============================================
+
+    tutorial link: http://stackabuse.com/single-page-apps-with-vue-js-and-flask-jwt-authentication/
+
+    # ============================================
+    In the basic sense a JWT is an encoded JSON object used to convey information between two systems which is composed of a header,
+    a payload, and a signature in the form of [HEADER].[PAYLOAD].[SIGNATURE] all contained in the HTTP header as 
+    "Authorization: Bearer [HEADER].[PAYLOAD].[SIGNATURE]". The process starts with the client (requesting system) 
+    authenticating with the server (a service with a desired resource) which generates a JWT that is only valid for
+    a specific amount of time. The server then returns this as a signed and encoded token for the client to store 
+    and use for verification in later communications.
+    # ============================================
+
+# ===========================================================
+# | Implementing JWT Authentication in the Flask RESTful API |
+# ===========================================================
+
+    (venv) $ pip install PyJWT
+
+    # ===========================================================
+    To start, I will give the application the ability to create new registered users which will be represented by a User class. 
+    As with all the other classes in this application the User class will reside in the models.py module.
+
+    First item to do is to import a couple of functions, generate_password_hash and check_password_hash from the werkzeug 
+    package's security module which I will use to generate and verify hashed passwords. There is no need to install this 
+    package as it comes with Flask automatically.
+    # ===========================================================
+
+    # ===========================================================
+    Directly below the above code I define the User class, which inherits from the SQLAlchemy Model class similar to the 
+    others defined in earlier posts. This User class needs to contain an auto generated integer primary key class field 
+    called id then two string fields called email and password with the email configured to be unique. I also give this 
+    class a relationship field to associate any surveys the user may create. On the other side of this equation I added 
+    a creator_id foreign key to the Survey class to link users to surveys they create.
+    # ===========================================================
+
+
+
