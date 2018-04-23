@@ -514,3 +514,77 @@ tutorial link = http://stackabuse.com/single-page-apps-with-vue-js-and-flask-res
 
     Now all that remains is to add the decorator to the create_survey(...) method.
     # ===========================================================
+
+
+# ==================================================
+# | Implementing JWT Authentication in Vue.js SPA |
+# ==================================================
+
+    # ===========================================================
+    With the back-end side the of authentication equation complete I now need to button up the client side by implementing 
+    JWT authenitcation in Vue.js. I start by creating a new module within the app called "utils" within the src directory and 
+    placing an index.js file inside of the utils folder. This module will contain two things:
+
+        - An event bus which I can use to send messages around the application when certain things happen, like failed authentication 
+        in the event of a expired JWT
+        - A function to check a JWT to see if it is still valid or not
+    # ===========================================================
+
+    # ===========================================================
+    The EventBus variable is just an instance of the Vue object. I can utilize the fact that the Vue object has both an $emit and a 
+    pair of $on / $off methods, which are used to emit events as well as register and unregister to events.
+
+    The isValid(jwt) functino is what I will use to determine if a user if authenticated based off the information in the JWT. 
+    Recall from the earlier basic explanation of JWTs that a standard set of properties reside in an encoded JSON object of the 
+    form "[HEADER].[PAYLOAD].[SIGNATURE]". For example, say I have the following JWT 
+    'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJleGFtcGxlQG1haWwuY29tIiwiaWF0IjoxNTIyMzI2NzMyLCJleHAiOjE1MjIzMjg1MzJ9.
+    1n9fx0vL9GumDGatwm2vfUqQl3yZ7Kl4t5NWMvW-pgw'. I can decode the middle body section to inspect its 
+    contents using the following JavaScript:
+    # ===========================================================
+
+        const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJleGFtcGxlQG1haWwuY29tIiwiaWF0IjoxNTIyMzI2NzMyLCJleHAiOjE1MjIzMjg1MzJ9.1n9fx0vL9GumDGatwm2vfUqQl3yZ7Kl4t5NWMvW-pgw'  
+        const tokenParts = token.split('.')  
+        const body = JSON.parse(atob(tokenParts[1]))  
+        console.log(body)   // {sub: "example@mail.com", iat: 1522326732, exp: 1522328532}  
+
+    # ===========================================================
+    Here the contents of the token body are sub, representing the email of the subscriber, iat, which is issued at timestamp in seconds, 
+    and exp, which is the time in which the token will expire as seconds from epoch (the number of seconds that have elapsed since
+    January 1, 1970 (midnight UTC/GMT), not counting leap seconds (in ISO 8601: 1970-01-01T00:00:00Z)). As you can see I am using 
+    the exp value in the isValidJwt(jwt) function to determine if the JWT is expired or not.
+    # ===========================================================
+
+    # ===========================================================
+    Next up is to add a couple of new AJAX functions to make calls to the Flask REST API to register new users and login existing ones, 
+    plus I will need to modify the postNewSurvey(...) function to include a header containing a JWT.
+    # ===========================================================
+
+    # ===========================================================
+    Ok, now I can put these things to use in the store to manage the state required to provide proper authentication functionality. 
+    To begin I import EventBus and isValidJwt(...) 
+    function from the utils module as well as the two new AJAX functions from the api module. Then add a definition of a
+     user object and a jwt token string in the store's state object.
+     # ===========================================================
+
+
+    # ===========================================================
+    Next, I need to add in a couple of action methods which will call either the register(...) or authenticate(...) AJAX functions we 
+    just defined. I name the one responsible for authenticating a user login(...), which calls the authenticate(...) AJAX function and 
+    when it returns a successful response containing a new JWT it commits a mutation I will name setJwtToken, which needs to be added 
+    to the mutations object. In the event of an unsuccessful authentication request I chain a catch method to the promise chain to catch 
+    the error and use the EventBus to emit a event notifying any subscribers that authentication failed.
+
+    The register(...) action method is quite similar to login(...), in fact, it actually utilizes login(...). I am also showing a small 
+    modification to the submitNewSurvey(...) action method that passes the JWT token as an additional parameter to the postNewSurvey(...) 
+    AJAX call.
+    # ===========================================================
+    As mentioned previously, I need to add a new mutation that explicitly sets the JWT and the user data.
+    # ===========================================================
+
+    # ===========================================================
+    The last thing that I would like to do in the store is to add a getter method that will be called in a couple of other places in 
+    the app which will indicate whether the current user is authenticated or not. I accomplish this by calling the isValidJwt(jwt) 
+    function from the utils module within the getter.
+    # ===========================================================
+
+
