@@ -1,6 +1,19 @@
+.DS_Store
 myenv/
-migrations/
+frontend/survey-spa/dist
+backend/myenv/
+myenv
+npm-debug.log*
 survey.db
 *.pyc
 __pycache__/
 node_modules/
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.pyc

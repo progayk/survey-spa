@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 // imports of AJAX function go here
-import { fetchSurveys, fetchSurvey, saveSurveyResponse } from '@/api'
+import { fetchSurveys, fetchSurvey, saveSurveyResponse, postNewSurvey } from '@/api'
 
 Vue.use(Vuex)
 

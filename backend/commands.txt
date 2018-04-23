@@ -118,7 +118,8 @@ Flask-SQLAlchemy ORM within the python interpreter it produces.
 # ======================
 
     (venv) $ python manage.py shell
-    (venv) Adams-MacBook-Pro:backend adammcquistan$ python manage.py shell
+    $ python manage.py shell
+    
     >>> survey = Survey(name='Dogs')
     >>> question = Question(text='What is your favorite dog?')
     >>> question.choices = [Choice(text='Beagle'), Choice(text='Rottweiler'), Choice(text='Labrador')]

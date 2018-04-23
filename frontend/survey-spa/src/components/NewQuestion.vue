@@ -42,30 +42,30 @@
 
 <script>
 export default {
-  data() {
+  data () {
     return {
-      question: "",
+      question: '',
       choices: []
-    };
+    }
   },
   methods: {
-    removeChoice(choice) {
-      const idx = this.choices.findIndex(c => c === choice);
-      this.choices.splice(idx, 1);
+    removeChoice (choice) {
+      const idx = this.choices.findIndex(c => c === choice)
+      this.choices.splice(idx, 1)
     },
-    saveQuestion() {
-      this.$emit("questionComplete", {
+    saveQuestion () {
+      this.$emit('questionComplete', {
         question: this.question,
         choices: this.choices.filter(c => !!c)
-      });
-      this.question = "";
-      this.choices = [];
+      })
+      this.question = ''
+      this.choices = []
     },
-    addChoice() {
-      this.choices.push("");
+    addChoice () {
+      this.choices.push('')
     }
   }
-};
+}
 </script>
 
 <style>
