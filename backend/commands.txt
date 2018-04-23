@@ -1,8 +1,8 @@
 tutorial link = http://stackabuse.com/single-page-apps-with-vue-js-and-flask-restful-api-with-flask/
 
-# ===========================
-# | Brief Explanation of Flask | 
-# ===========================
+                # ===========================
+                # | Brief Explanation of Flask | 
+                # ===========================
 
 # ===========================
 Flask is a Python-based micro-framework for rapid prototyping and development of small to moderate size web applications. 
@@ -11,9 +11,9 @@ detail pertaining to the basic or common parts of Flask. Instead I will be takin
 on constructing a RESTful API to fuel the frontend with data, which I covered in the articles leading up to this one.
 # ======================
 
-# =============================================
-# | Scaffolding out the Backend Project Files | 
-# =============================================
+                # =============================================
+                # | Scaffolding out the Backend Project Files | 
+                # =============================================
 
 # =============================================
 One thing that makes Flask (and in large part the entire Python ecosystem) so awesome are the large number of well-designed 
@@ -57,18 +57,18 @@ Below is a brief description of what each file is going to be used for:
 # =============================================
 
 
-# ===================================
-# | Creating an Application Factory | 
-# ===================================
+                # ===================================
+                # | Creating an Application Factory | 
+                # ===================================
 
 # ===================================================
 This config class defines a SQLALCHEMY_DATABASE_URI application database connection URI to a single file SQLite database called survey.db. 
 It also provides SECRET_KEY config option that is used for encryption.
 # ===================================================
 
-# =================
-# | Blueprint API | 
-# =================
+                # =================
+                # | Blueprint API | 
+                # =================
 
 # ===================================================
 Next I will move into the api.py module where I can define a Blueprint object called api containing RESTful routes. 
@@ -78,9 +78,9 @@ function say_hello(name) as a function parameter which I use in the JSON respons
 # ===================================================
 
 
-# ===================================================
-# | Dev Server Entry Point and Validating the Setup | 
-# ===================================================
+                # ===================================================
+                # | Dev Server Entry Point and Validating the Setup | 
+                # ===================================================
 
 # ===================================================
 To test this out I need to add a couple of lines of code in appserver.py to create an instance of the app. This enables me to fire up the 
@@ -104,9 +104,9 @@ GET request to http://localhost:5000/api/hello/adam/ using the requests package.
     >>> print(response.json())
     {'msg': 'Hello adam'}
 
-# ===========================
-# | Defining the Data Layer | 
-# ===========================
+                # ===========================
+                # | Defining the Data Layer | 
+                # ===========================
 
 # ===========================
 The last thing that I am doing in the manage.py module is creating another custom command utilizing @manager.
@@ -146,9 +146,9 @@ Flask-SQLAlchemy ORM within the python interpreter it produces.
         Choice(id=5, text=Rottweiler)
 
 
-# ==============================
-# | Completing the RESTful API |
-# ==============================
+                # ==============================
+                # | Completing the RESTful API |
+                # ==============================
 
 # ======================
 If the dev server is still running then once I save the project files the server should automatically reload
@@ -333,11 +333,59 @@ Lastly, I need to save all my files and do one final test like so:
     >>> resp.status_code()
     201 
 
-# =======================================================
-  | Route        |     Method     |      Functionaility |
-# -------------------------------------------------------
- /api/surveys/         GET	        Retrieve all surveys
- /api/surveys/	       POST	        Create a new survey
- /api/surveys/id/	   GET	        Retrieve a survey by id
- /api/surveys/id/	   PUT	        Update a survey's choice selections
- # -------------------------------------------------------
+# ==============================================================================
+|   Route           |     Method     |      Functionaility                      |
+# ------------------------------------------------------------------------------
+ /api/surveys/      |      GET	     |      Retrieve all surveys                |
+ /api/surveys/	    |      POST	     |      Create a new survey                 |
+ /api/surveys/id/   |      GET	     |      Retrieve a survey by id             |
+ /api/surveys/id/   |      PUT	     |      Update a survey's choice selections |
+ # -----------------------------------------------------------------------------
+
+
+                # ===================================================
+                # | Brief Explanation of AJAX and Thick Client Apps |
+                # ===================================================
+
+# ==============================================================================
+AJAX is a powerful technology that has had enormous success in building highly interactive and fast web applications. 
+In fact, I believe AJAX is probably the most impactful technology that has fueled a major paradigm shift from the era 
+of thin client web apps to the increasingly thick or fat client web apps we see today. The survey application that 
+I have been demonstrating in this series is considered a distributed client server application implemented as a thick client. 
+This means that the majority of the logic and behavior is implemented on the client via JavaScript (mainly using Vue.js) 
+while the server side is a fairly dumb RESTful API that simply consumes and serves up data.
+
+There are two major technologies that enable this thick client application to juggle the maintenance of state (data), 
+behavior, and data driven presentation.
+
+    1. The Vue.js framework with its excellent reactivity system shared along with the vuex flux-like library
+    2. AJAX functionality implemented within a well designed JavaScript library called axios
+
+You should already be familiar with the awesomeness afforded by Vue.js and vuex from my prior posts in this series. 
+So I will focus on explaining AJAX in this article. AJAX is a network communication technology that uses HTTP to push and pull 
+data to and from a server in an asynchronous manner within the browser. In this way the browser is able to rapidly update individual 
+components that are dependent on small amounts of data, rather than updating the entire page, which leads to a far more responsive experience.
+# ==============================================================================
+
+                # ======================================
+                # | Setting up Axios and Enabling CORS |
+                # ======================================
+
+# ==============================================================================
+To install axios I will use npm and save it to my the package.json file with the following command:
+# ==============================================================================
+
+    $ npm install --save axios
+
+# ==============================================================================
+Now, in order to use axios to make AJAX requests from the client to the back-end server I will need to make a change to the Flask application 
+to enable Cross Origin Resource Sharing (CORS). Anytime a client makes a request for a resource that resides on another machine as defined 
+by protocol, IP address / domain name, or port number then additional headers associated with CORS must be added. 
+Luckily, the there is a handy little Flask extension, Flask-CORS, that makes integration with Flask very easy. 
+As done previously I use pip to install it like so.
+# ==============================================================================
+
+# ==============================================================================
+Next I need to import and instantiate the CORS extension object then register it with the 
+Flask application object within the application.py module of the back-end application.
+# ==============================================================================

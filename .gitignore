@@ -1,5 +1,5 @@
 myenv/
 migrations/
 survey.db
-pycache/
 *.pyc
+__pycache__/
