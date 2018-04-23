@@ -389,3 +389,21 @@ As done previously I use pip to install it like so.
 Next I need to import and instantiate the CORS extension object then register it with the 
 Flask application object within the application.py module of the back-end application.
 # ==============================================================================
+
+                # ======================================
+                # | Implementing AJAX Requests with Axios |
+                # ======================================
+
+# ==============================================================================
+In src/api/index.js I need to import the axios library and for reusability I also define a variable called API_URL that 
+is equal to the root of the API resource http://127.0.0.1:5000/api. Then I replace the body of the existing functions 
+to use the axios methods get(...), put(...), and post(...)
+# ==============================================================================
+
+# ==============================================================================
+Now there are only two small changes to make in src/store/index.js to accommodate the convention used by axios to return 
+data from get requests. In the loadSurvey(...) and loadSurveys(...) action methods, they are each calling the function 
+that in turn calls the axios.get(...) methods, which return promises. When these promises resolve they will contain the 
+data returned by the AJAX request to the server and that data will be held in a .data member of the resolved promise object.
+ So, the data passed to the mutations will need to be response.data instead of just response.
+# ==============================================================================
