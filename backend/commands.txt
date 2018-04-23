@@ -1,0 +1,209 @@
+# ===========================
+# | Brief Explanation of Flask | 
+# ===========================
+
+# ===========================
+Flask is a Python-based micro-framework for rapid prototyping and development of small to moderate size web applications. 
+Flask has already been covered in a couple of prior posts here and here on StackAbuse so, I will not be going into great 
+detail pertaining to the basic or common parts of Flask. Instead I will be taking a more pragmatic approach focusing mostly 
+on constructing a RESTful API to fuel the frontend with data, which I covered in the articles leading up to this one.
+# ======================
+
+# =============================================
+# | Scaffolding out the Backend Project Files | 
+# =============================================
+
+# =============================================
+One thing that makes Flask (and in large part the entire Python ecosystem) so awesome are the large number of well-designed 
+packages available on PyPI. Below is a brief explanation of the libraries that I installed and their intended usage.
+
+    Flask: Web micro framework
+    Flask-SQLAlchemy: SQLAlchemy-based ORM with some Flask-specific awesome sauce packaged with it
+    Flask-Migrate: Database migration library
+    Flask-Script: Extremely useful package for interacting with a Flask application from the command line
+    requests: a handy package for making network requests which I will use to test the REST API
+    In the /backend directory I make a few new files called manage.py and appserver.py. 
+    Also, I will make a new directory inside of /backend that will become my "surveyapi" Flask application. 
+    Within the surveyapi directory I make the files __init__.py, models.py, application.py, and api.py. 
+    This results in a directory structure beginning at /backend like so (omitting the venv directory).
+# =============================================
+
+    $ virtualenv -p python3 venv
+    $ source venv/bin/activate
+    (venv) $ pip install Flask Flask-SQLAlchemy Flask-Migrate Flask-Script requests
+
+        ├── manage.py
+    ├── appserver.py
+    └── surveyapi
+        ├── __init__.py
+        ├── api.py
+        ├── application.py
+        ├── config.py
+        └── models.py
+
+# =============================================
+Below is a brief description of what each file is going to be used for:
+
+    manage.py: access to the Flask application instance for various Flask-Script commands
+    appserver.py: start-up script for running the surveyapi application
+    surveyapi/: the backend Flask application
+    __init__.py: turns the surveyapi directory into a valid Python package
+    api.py: for defining REST API route endpoints capable of consuming and producing JSON request and responses
+    application.py: for creating an instance of the Flask application
+    config.py: contains configuration settings for the Flask application
+    models.py: for defining classes that will serve as data objects for the survey application such as Survey, Question, and Choice
+# =============================================
+
+
+# ===================================
+# | Creating an Application Factory | 
+# ===================================
+
+# ===================================================
+This config class defines a SQLALCHEMY_DATABASE_URI application database connection URI to a single file SQLite database called survey.db. 
+It also provides SECRET_KEY config option that is used for encryption.
+# ===================================================
+
+# =================
+# | Blueprint API | 
+# =================
+
+# ===================================================
+Next I will move into the api.py module where I can define a Blueprint object called api containing RESTful routes. 
+To keep things simple I will begin by just defining a simple view function called say_hello() associated with the endpoint 
+/api/hello/<string:name>/. The <string:name> portion of the url is a dynamic string variable that gets passed to the view 
+function say_hello(name) as a function parameter which I use in the JSON response message that gets returned.
+# ===================================================
+
+
+# ===================================================
+# | Dev Server Entry Point and Validating the Setup | 
+# ===================================================
+
+# ===================================================
+To test this out I need to add a couple of lines of code in appserver.py to create an instance of the app. This enables me to fire up the 
+Flask dev server by calling the run() method on the app instance.
+# ===================================================
+
+    (venv) $ python appserver.py
+    * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+    * Restarting with stat
+    * Debugger is active!
+    * Debugger PIN: 676-284-544
+
+# ===================================================
+Now to test the new endpoint, in a new terminal with the virtual environment activated, I will fire up a Python interpreter and make a 
+GET request to http://localhost:5000/api/hello/adam/ using the requests package.
+# ===================================================
+
+    (venv) $ python
+    >>> import requests
+    >>> response = requests.get('http://localhost:5000/api/hello/adam/')
+    >>> print(response.json())
+    {'msg': 'Hello adam'}
+
+# ===========================
+# | Defining the Data Layer | 
+# ===========================
+
+# ===========================
+The last thing that I am doing in the manage.py module is creating another custom command utilizing @manager.
+shell to decorate a shell_ctx() function which returns a dict mapping keywords to the app and db objects along with 
+the Survey, Question and, Choice data classes.
+
+I will now take advantage of the usefulness of this shell utility command to demonstrate how to work with the 
+Flask-SQLAlchemy ORM within the python interpreter it produces.
+# ======================
+
+    (venv) $ python manage.py shell
+    (venv) Adams-MacBook-Pro:backend adammcquistan$ python manage.py shell
+    >>> survey = Survey(name='Dogs')
+    >>> question = Question(text='What is your favorite dog?')
+    >>> question.choices = [Choice(text='Beagle'), Choice(text='Rottweiler'), Choice(text='Labrador')]
+    >>> question2 = Question(text='What is your second favorite dog?')
+    >>> question2.choices = [Choice(text='Beagle'), Choice(text='Rottweiler'), Choice(text='Labrador')]
+    >>> survey.questions = [question, question2]
+    >>> db.session.add(survey)
+    >>> db.session.commit()
+    >>> surveys = Survey.query.all()
+    >>> for s in surveys:
+    ...     print('Survey(id={}, name={})'.format(s.id, s.name))
+    ...     for q in s.questions:
+    ...             print('  Question(id={}, text={})'.format(q.id, q.text))
+    ...             for c in q.choices:
+    ...                     print('    Choice(id={}, text={})'.format(c.id, c.text))
+    ...
+    Survey(id=1, name=Dogs)  
+    Question(id=1, text=What is your favorite dog?)
+        Choice(id=1, text=Beagle)
+        Choice(id=3, text=Labrador)
+        Choice(id=2, text=Rottweiler)
+    Question(id=2, text=What is your second favorite dog?)
+        Choice(id=4, text=Beagle)
+        Choice(id=6, text=Labrador)
+        Choice(id=5, text=Rottweiler)
+
+
+# ==============================
+# | Completing the RESTful API |
+# ==============================
+
+# ======================
+If the dev server is still running then once I save the project files the server should automatically reload
+refreshing all the changes. If not, then running (venv) $ python appserver.py will start the server.
+Now in another terminal with the virtual environment activated I can use the requests package to test this new endpoint. 
+However, I would like to share a pro-tip on displaying JSON responses in a more readable way by using another awesome 
+Python package called pprint.
+# ======================
+
+    (venv) $ pip install pprint
+    (venv) $ python
+    >>> import pprint, requests
+    >>> pp == pprint.PrettyPrinter()
+    >>> resp = requests.get('http://localhost:5000/api/surveys/')
+    >>> pp.pprint(resp.json())
+    {'surveys': [{
+        'created_at': '2018-03-06 03:52:44',
+        'id': 1,
+        'name': 'Dogs',
+        'questions': [{
+            'choices': [{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 1,
+                'question_id': 1,
+                'text': 'Beagle'
+                },{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 3,
+                'question_id': 1,
+                'text': 'Labrador'
+                },{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 2,
+                'question_id': 1,
+                'text': 'Rottweiler'}],
+                'created_at': '2018-03-06 03:52:44',
+                'id': 1,
+                'survey_id': 1,
+                'text': 'What is your favorite dog?'
+            },{
+            'choices': [{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 4,
+                'question_id': 2,
+                'text': 'Beagle'
+                },{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 6,
+                'question_id': 2,
+                'text': 'Labrador'
+                },{
+                'created_at': '2018-03-06 03:52:44',
+                'id': 5,
+                'question_id': 2,
+                'text': 'Rottweiler'}],
+            'created_at': '2018-03-06 03:52:44',
+            'id': 2,
+            'survey_id': 1,
+            'text': 'What is your second favorite dog?'}]}
+        ]}

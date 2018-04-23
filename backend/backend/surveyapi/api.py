@@ -4,16 +4,13 @@
 """
 
 from flask import Blueprint, jsonify, request
+from .models import db, Survey, Question, Choice
 
 api = Blueprint('api', __name__)
 
-@api.route('/hello/<string:name>/')
-def say_hello(name):
-    response = {'msg': "Hello, {}".format(name)}
-    return jsonify(response)
-
-
-@api.route('/hola/<string:nombre>/')
-def saludar(nombre):
-    response = {'mensaje': "{} es una gran hijoeputa!".format(nombre.capitalize())}
-    return jsonify(response)
+# As for the actual resource endpoints, I will start by coding up 
+# the ability to fetch all survey resources. 
+@api.route('/surveys/')
+def surveys():
+    surveys = Survey.query.all()
+    return jsonify({'surveys': [s.to_dict() for s in surveys]})
