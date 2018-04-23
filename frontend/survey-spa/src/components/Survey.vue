@@ -63,7 +63,6 @@
 </template>
 
 <script>
-import { fetchSurvey } from '../api'
 export default {
   data () {
     return {

@@ -587,4 +587,45 @@ tutorial link = http://stackabuse.com/single-page-apps-with-vue-js-and-flask-res
     function from the utils module within the getter.
     # ===========================================================
 
+    # ===========================================================
+    Add a new Vue.js component for a login / register page in the application. I create a file called Login.vue in the components directory. 
+    In the template section I give it two input fields, one for an email, which will serve as the username, and another for the password.
+    Below them are two buttons, one for logging in if you are already a registered user and another for registering.
+    # ===========================================================
+
+    # ===========================================================
+    Obviously this component will need some local state associated with a user as indicated by my use of v-model in the input fields, 
+    so I add that in the component's data property next. I also add an errorMsg data property which will hold any messages emitted by 
+    the EventBus in the event of failed registration or authentication. To utilize the EventBus I subscribe to the 'failedRegistering' 
+    and 'failedAuthentication' events in the mounted Vue.js component life cycle stage, and unregister them in the beforeDestroy stage. 
+    Another thing to note is the usage of @click event handlers being called upon clicking the Login and Register buttons. 
+    Those are to be implemented as component methods, authenticate() and register().
+    # ===========================================================
+
+    # ===========================================================  
+    now I just need to let the rest of the application know that the Login component exists. I do this by importing it in the router 
+    module and defining it's route. While I'm in the router module I need to make an additional change to the NewSurvey component's 
+    route to guard its access to only authenticated users
+    # ===========================================================
+
+    # ===========================================================
+    Its worth mentioning here that I am utilizing vue-router's route guard beforeEnter to check to see if the current user is 
+    authenticated via the isAuthenticated getter from the store. If isAuthenticated returns false then I redirect the application 
+    to the login page.
+
+    With the Login component coded up and its route defined I can provide access to it via a router-link component in the Header 
+    component within components/Header.vue. I conditionally show either the link to the NewSurvey component or the Login component 
+    by utilizing the isAuthenticated store getter once more within a computed property in the Header component referenced by 
+    v-if directives.
+    # ===========================================================
+
+    # ===========================================================
+    Next I click on the "Login / Register" link and fill out the inputs for an email and password then click register to make
+    sure it functions as expected and I get redirected back to the home page and see the "Create Survey" link displayed instead 
+    of the "Login / Register" one that was there before registering.
+    # ===========================================================
+
+
+
+
 

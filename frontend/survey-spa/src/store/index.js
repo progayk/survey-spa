@@ -3,7 +3,7 @@ import Vuex from 'vuex'
 
 // imports of AJAX function go here
 import { fetchSurveys, fetchSurvey, saveSurveyResponse, postNewSurvey, authenticate, register } from '@/api'
-import { isValidJwt, EventBus } from "@/utils"
+import { isValidJwt, EventBus } from '@/utils'
 
 Vue.use(Vuex)
 
@@ -44,7 +44,7 @@ const actions = {
       .then(response => context.commit('setJwtToken', { jwt: response.data }))
       .catch(error => {
         console.log('Error Authenticating: ', error)
-        EventBus.emit('failedAuthentication', error)
+        EventBus.$emit('failedAuthentication', error)
       })
   },
   register (context, userData) {
@@ -53,7 +53,7 @@ const actions = {
       .then(context.dispatch('login', userData))
       .catch(error => {
         console.log('Error Registering: ', error)
-        EventBus.emit('failedRegistration:', error)
+        EventBus.$emit('failedRegistering:', error)
       })
   },
   submitNewSurvey (context, survey) {
@@ -77,7 +77,7 @@ const mutations = {
     }
     state.currentSurvey = payload.survey
   },
-  setChoice(state, payload) {
+  setChoice (state, payload) {
     const { questionId, choice } = payload
     const nQuestions = state.currentSurvey.questions.length
     for (let i = 0; i < nQuestions; i++) {
@@ -93,7 +93,7 @@ const mutations = {
   },
   setJwtToken (state, payload) {
     console.log('setJwtToken payload = ', payload)
-    localStorage.token = payload.token
+    localStorage.token = payload.jwt.token
     state.jwt = payload.jwt
   }
 }

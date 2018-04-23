@@ -3,7 +3,6 @@ myenv/
 frontend/survey-spa/dist
 backend/myenv/
 backend/backend/survey.db
-survey.db
 myenv
 npm-debug.log*
 survey.db
