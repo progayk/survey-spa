@@ -14,3 +14,9 @@ api = Blueprint('api', __name__)
 def surveys():
     surveys = Survey.query.all()
     return jsonify({'surveys': [s.to_dict() for s in surveys]})
+
+
+@api.route('/surveys/<int:id>/')
+def survey(id):
+    survey = Survey.query.get(id)
+    return jsonify({'survey': survey.to_dict()})

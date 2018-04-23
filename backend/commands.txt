@@ -207,3 +207,9 @@ Python package called pprint.
             'survey_id': 1,
             'text': 'What is your second favorite dog?'}]}
         ]}
+
+
+# ======================
+implement the functionality to fetch a single survey by its id with the URL endpoint /surveys/id/ and view function survey(id). 
+Immediately following the surveys() API view function
+# ======================
